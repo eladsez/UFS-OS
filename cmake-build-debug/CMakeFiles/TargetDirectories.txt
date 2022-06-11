@@ -1,0 +1,3 @@
+/home/elad/Desktop/ufs-os/cmake-build-debug/CMakeFiles/ufs_os.dir
+/home/elad/Desktop/ufs-os/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/elad/Desktop/ufs-os/cmake-build-debug/CMakeFiles/rebuild_cache.dir

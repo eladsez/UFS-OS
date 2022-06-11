@@ -1,0 +1,4 @@
+/snap/clion/193/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/193/bin/ninja/linux/ninja -G Ninja -S /home/elad/Desktop/ufs-os -B /home/elad/Desktop/ufs-os/cmake-build-debug
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/elad/Desktop/ufs-os/cmake-build-debug
