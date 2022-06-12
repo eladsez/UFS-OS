@@ -24,6 +24,8 @@ int main() {
         myclose(myopen("/foldi/file3.txt", O_CREAT));
         myclose(myopen("/foldi/file4.txt", O_CREAT));
         myclose(myopen("/foldi/file5.txt", O_CREAT));
+        myclose(myopen("/nonsense/file0.txt", O_CREAT));
+        myclose(myopen("/nonsense/file1.txt", O_CREAT));
 
         myDIR *dir = myopendir("/foldi");
         mydirent *dirent;

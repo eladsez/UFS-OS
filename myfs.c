@@ -304,30 +304,32 @@ ssize_t mywrite(int myfd, const void *buf, size_t count) {
 
 myDIR *myopendir(const char *name) {
     int childs[superb.inodesSize];
-    size_t ca = 0;
+    size_t entries = 0;
     for (int i = 0; i < superb.inodesSize; ++i) {
         char *poten_child = inodes[i].name;
         int j;
-        for (j = (int) strlen(poten_child) - 1; j > 0; j--) {
+        for (j = (int) strlen(poten_child) - 1; j > 0; --j) {
             if (poten_child[j] == '/') {
                 break;
             }
         }
+        if (j == 0 && strlen(name) != 1) continue;
+        if (j != 0 && strlen(name) == 1) continue;
         int minlen = (strlen(name) >= j) ? j : (int) strlen(name);
         if (strncmp(name, poten_child, minlen) != 0) {
             continue;
         }
-        childs[ca] = i;
-        ++ca;
+        childs[entries] = i;
+        ++entries;
 
     }
     myDIR *ans = malloc(sizeof(myDIR));
-    ans->entry = malloc((ca + 1) * sizeof(struct mydirent));
-    for (int i = 0; i < ca; ++i) {
+    ans->entry = malloc((entries + 1) * sizeof(struct mydirent));
+    for (int i = 0; i < entries; ++i) {
         ans->entry[i].inode = childs[i];
         strcpy(ans->entry[i].d_name, inodes[childs[i]].name);
     }
-    ans->size = ca;
+    ans->size = entries;
     ans->index = 0;
     return ans;
 }
@@ -347,36 +349,29 @@ int myclosedir(myDIR *dirp) {
     return 0;
 }
 
-myFILE *myfopen(const char *restrict pathname, const char
-*restrict mode) {
-    myFILE *fp;
-    int f;
-    int flags, oflags;
+//myFILE *myfopen(const char *restrict pathname, const char *restrict mode) {
+//
+//}
+//
+//
+//int myfclose(myFILE *stream) {
+//
+//}
+//
+//size_t myfwrite(const void *restrict ptr, size_t size, size_t nmemb, myFILE *restrict stream) {
+//
+//}
+//
+//int myfseek(myFILE *stream, long offset, int whence) {
+//
+//}
+//
+//int myfscanf(myFILE *restrict stream, const char *restrict format, ...) {
+//
+//}
+//
+//int myfprintf(myFILE *restrict stream, const char *restrict format, ...) {
+//
+//}
 
-    /////////////init ans from inode id
-
-
-    return fp;
-}
-
-
-int myfclose(myFILE *stream) {
-
-}
-
-size_t myfwrite(const void *restrict ptr, size_t size, size_t nmemb, myFILE *restrict stream) {
-
-}
-
-int myfseek(myFILE *stream, long offset, int whence) {
-
-}
-
-int myfscanf(myFILE *restrict stream, const char *restrict format, ...) {
-
-}
-
-int myfprintf(myFILE *restrict stream, const char *restrict format, ...) {
-
-}
 

@@ -43,15 +43,13 @@ typedef struct mydirent{
 } mydirent;
 
 typedef struct myDIR{
-    size_t size;
-    size_t index;
+    size_t size; // the number of entries in the directory
+    size_t index; // the current entry
     mydirent *entry;
 } myDIR;
 
-typedef struct myFILE { //
-    inode index;
-    size_t offset;
-    size_t size;
+typedef struct myFILE {
+    int fd;
 } myFILE;
 
 void mymkfs(int size);
