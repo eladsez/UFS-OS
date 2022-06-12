@@ -35,7 +35,8 @@ void syncUFS(const char *path) {
     }
     memcpy(ufs, &superb, sizeof(superBlock)); // copy the super block to the ufs-file
     memcpy(ufs + sizeof(superBlock), inodes, sizeof(inode) * superb.inodesSize); // copy the super block to the ufs-file
-    memcpy(ufs + sizeof(superBlock) + superb.inodesSize, blocks, superb.blocksSize); // copy the super block to the ufs-file
+    memcpy(ufs + sizeof(superBlock) + superb.inodesSize, blocks,
+           superb.blocksSize); // copy the super block to the ufs-file
 
     munmap(ufs, totalSize); // free the memory of the file from the program
     close(ufs_fd); // we have to use close here if we want to open it elsewhere on the program (and we want)
@@ -64,7 +65,7 @@ void mymkfs(int size) {
     blocks = malloc(sizeof(block) * superb.blocksSize);
     for (i = 0; i < superb.blocksSize; ++i) {
         blocks[i].next_block = -1;
-        blocks[i].free = 0;
+        blocks[i].free = 1;
     }
 
     if (blocks == NULL || inodes == NULL) {
@@ -89,9 +90,9 @@ int mymount(const char *source, const char *target, const char *filesystemtype, 
  * Function for finding new inodes
  * @return the index of the new inode in the inodes list
  */
-int findNewInode(){
-    for (int i = 0; i < superb.inodesSize; ++i){
-        if (inodes[i].directedBlock == -1){
+int findNewInode() {
+    for (int i = 0; i < superb.inodesSize; ++i) {
+        if (inodes[i].directedBlock == -1) {
             return i;
         }
     }
@@ -102,9 +103,9 @@ int findNewInode(){
  * Function for finding new free block
  * @return the index of the new block in the blocks list
  */
-int findNewBlock(){
-    for (int i = 0; i < superb.blocksSize; ++i){
-        if (blocks[i].free == 0){
+int findNewBlock() {
+    for (int i = 0; i < superb.blocksSize; ++i) {
+        if (blocks[i].free) {
             return i;
         }
     }
@@ -115,9 +116,9 @@ int findNewBlock(){
  * Function for finding new free fd
  * @return the index of the new fd in the fd list
  */
-int findNewFD(){
-    for (int i = 0; i < 10000; ++i){
-        if (fd[i].inode == -1){
+int findNewFD() {
+    for (int i = 0; i < 10000; ++i) {
+        if (fd[i].inode == -1) {
             return i;
         }
     }
@@ -128,9 +129,9 @@ int findNewFD(){
  * Function for finding inode by his name
  * @return the index of the inode in the inodes list
  */
-int findInode(const char *name){
-    for (int i = 0; i < superb.inodesSize; ++i){
-        if (!strcmp(inodes[i].name, name)){
+int findInode(const char *name) {
+    for (int i = 0; i < superb.inodesSize; ++i) {
+        if (!strcmp(inodes[i].name, name)) {
             return i;
         }
     }
@@ -142,11 +143,10 @@ int findInode(const char *name){
  * @param name - the name of the file
  * @return the index of the new inode in the inode list
  */
-int createNewFile(const char *name){
+int createNewFile(const char *name) {
     int inode = findNewInode();
     int block = findNewBlock();
-
-    if (inode == -1 || block == -1){
+    if (inode == -1 || block == -1) {
         return -1;
     }
 
@@ -163,16 +163,16 @@ int createNewFile(const char *name){
  * @param flags - permissions to the file
  * @return in successes return new fd to the opened file, otherwise -1
  */
-int myopen(const char *pathname, int flags){
+int myopen(const char *pathname, int flags) {
     int inode = findInode(pathname);
-    if (inode == -1 && flags&O_CREAT){ // if the file doesn't exist and O_CREAT so create it
+    if (inode == -1 && flags & O_CREAT) { // if the file doesn't exist and O_CREAT so create it
         inode = createNewFile(pathname);
     }
-    else if (inode == -1){ // if the file doesn't exist and noe O_CREAT
+    if (inode == -1) { // if the file doesn't exist and no O_CREAT
         return -1;
     }
     int newfd = findNewFD();
-    if (newfd == -1){ // if the fd list is full return -1
+    if (newfd == -1) { // if the fd list is full return -1
         return -1;
     }
     fd[newfd].inode = inode;
@@ -187,7 +187,7 @@ int myopen(const char *pathname, int flags){
  * @param myfd - the file descriptor we wish to close
  * @return - 0 (currently)
  */
-int myclose(int myfd){
+int myclose(int myfd) {
     fd[myfd].inode = -1;
     fd[myfd].permissions = -1;
     fd[myfd].offset = -1;
@@ -201,38 +201,182 @@ int myclose(int myfd){
  * @param count how much to read (max data to read)
  * @return in successes return the size we actually read, otherwise -1
  */
-ssize_t myread(int myfd, void *buf, size_t count){
-    ssize_t dataSum = 0;
+ssize_t myread(int myfd, void *buf, size_t count) {
     // if it doesn't have permission to read or the fd doesn't exist return error
-    if (fd[myfd].permissions != O_RDONLY || fd[myfd].permissions != O_RDWR || fd[myfd].inode == -1) {
+    if ((fd[myfd].permissions != O_RDONLY && fd[myfd].permissions != O_RDWR) ||
+        fd[myfd].inode == -1) {/// TODO: fix the permissions
         return -1;
     }
+    ssize_t dataSum = 0;
     int block = inodes[fd[myfd].inode].directedBlock;
     int tempOffset = fd[myfd].offset;
-    while(tempOffset > BLOCK_SIZE){ // finding the block we need to read from helping the offset of myfd
+    while (tempOffset > BLOCK_SIZE) { // finding the block we need to read from helping the offset of myfd
         block = blocks[block].next_block;
         tempOffset -= BLOCK_SIZE;
     }
 
-    while(block != -1 && count >= BLOCK_SIZE){ // read until we finish the file or until count is smaller than a full block size
+    // read until we finish the file or until count is smaller than a full block size
+    while (block != -1 && count >= BLOCK_SIZE) {
+
+        fd[myfd].offset += BLOCK_SIZE - tempOffset; // increase the actual offset
+        dataSum += BLOCK_SIZE - tempOffset;
         strncpy(buf, blocks[block].data + tempOffset, BLOCK_SIZE - tempOffset);
         tempOffset = 0;
         block = blocks[block].next_block;
         count -= BLOCK_SIZE;
-        dataSum += BLOCK_SIZE;
     }
-    if (block != -1){ // if the block not over it means the count < block size so read the rest
+    if (block != -1) { // if the block not over it means the count < block size so read the rest
         strncpy(buf, blocks[block].data, count);
         dataSum += (ssize_t) count;
     }
     return dataSum;
 }
 
-ssize_t mywrite(int myfd, const void *buf, size_t count){
+/**
+ * My implementation to write syscall
+ * @param myfd - the file descriptor we want to writ to
+ * @param buf - what to write
+ * @param count - how much to write
+ * @return the sum bytes writen
+ */
+ssize_t mywrite(int myfd, const void *buf, size_t count) {
+    // if it doesn't have permission to write or the fd doesn't exist return error
+    if (((fd[myfd].permissions & O_WRONLY) != O_WRONLY && (fd[myfd].permissions & O_RDWR) != O_RDWR) ||
+        fd[myfd].inode == -1) {
+        return -1;
+    }
 
+    ssize_t dataSum = 0;
+    int block = inodes[fd[myfd].inode].directedBlock;
+    int tempOffset = fd[myfd].offset;
+
+    while (tempOffset > BLOCK_SIZE) { // finding the block we need to write to with helping from the offset of myfd
+        block = blocks[block].next_block;
+        tempOffset -= BLOCK_SIZE;
+    }
+
+    // write until we reach the last block or until count is smaller than a full block size
+    while (blocks[block].next_block != -1 && count >= BLOCK_SIZE) {
+        strncpy(blocks[block].data + tempOffset, buf, BLOCK_SIZE - tempOffset);
+        tempOffset = 0;
+        block = blocks[block].next_block;
+        count -= BLOCK_SIZE;
+        dataSum += BLOCK_SIZE;
+    }
+
+    // this loop is when we need to creat new blocks
+    while (blocks[block].next_block == -1 && count >= BLOCK_SIZE) {
+        strncpy(blocks[block].data + tempOffset, buf, BLOCK_SIZE - tempOffset);
+        tempOffset = 0;
+        count -= BLOCK_SIZE;
+        dataSum += BLOCK_SIZE;
+        // finding a new block to write on
+        blocks[block].next_block = findNewBlock();
+        if (blocks[block].next_block == -1) {
+            return -1;
+        }
+        blocks[blocks[block].next_block].free = 0;
+        block = blocks[block].next_block;
+    }
+
+    // this loop is when we need to creat new blocks
+    while (blocks[block].next_block == -1 && count < BLOCK_SIZE && count > 0) {
+        if (count + tempOffset < BLOCK_SIZE) {
+            strncpy(blocks[block].data + tempOffset, buf, count);
+            dataSum += (int) count;
+            count = 0;
+        } else {
+            strncpy(blocks[block].data + tempOffset, buf, BLOCK_SIZE - tempOffset);
+            tempOffset = 0;
+            count -= BLOCK_SIZE + tempOffset;
+            dataSum += BLOCK_SIZE - tempOffset;
+            // finding a new block to write on
+            blocks[block].next_block = findNewBlock();
+            if (blocks[block].next_block == -1) {
+                return -1;
+            }
+            blocks[blocks[block].next_block].free = 0;
+            block = blocks[block].next_block;
+        }
+    }
+    return dataSum;
+}
+
+myDIR *myopendir(const char *name) {
+    int childs[superb.inodesSize];
+    size_t ca = 0;
+    for (int i = 0; i < superb.inodesSize; ++i) {
+        char *poten_child = inodes[i].name;
+        int j;
+        for (j = (int) strlen(poten_child) - 1; j > 0; j--) {
+            if (poten_child[j] == '/') {
+                break;
+            }
+        }
+        int minlen = (strlen(name) >= j) ? j : (int) strlen(name);
+        if (strncmp(name, poten_child, minlen) != 0) {
+            continue;
+        }
+        childs[ca] = i;
+        ++ca;
+
+    }
+    myDIR *ans = malloc(sizeof(myDIR));
+    ans->entry = malloc((ca + 1) * sizeof(struct mydirent));
+    for (int i = 0; i < ca; ++i) {
+        ans->entry[i].inode = childs[i];
+        strcpy(ans->entry[i].d_name, inodes[childs[i]].name);
+    }
+    ans->size = ca;
+    ans->index = 0;
+    return ans;
+}
+
+mydirent *myreaddir(myDIR *dirp) {
+    if (dirp->size == dirp->index) {
+        return NULL;
+    }
+    mydirent *ans = &(dirp->entry[dirp->index]);
+    dirp->index += 1;
+    return ans;
+}
+
+int myclosedir(myDIR *dirp) {
+    free(dirp->entry);
+    free(dirp);
+    return 0;
+}
+
+myFILE *myfopen(const char *restrict pathname, const char
+*restrict mode) {
+    myFILE *fp;
+    int f;
+    int flags, oflags;
+
+    /////////////init ans from inode id
+
+
+    return fp;
 }
 
 
+int myfclose(myFILE *stream) {
 
+}
 
+size_t myfwrite(const void *restrict ptr, size_t size, size_t nmemb, myFILE *restrict stream) {
+
+}
+
+int myfseek(myFILE *stream, long offset, int whence) {
+
+}
+
+int myfscanf(myFILE *restrict stream, const char *restrict format, ...) {
+
+}
+
+int myfprintf(myFILE *restrict stream, const char *restrict format, ...) {
+
+}
 

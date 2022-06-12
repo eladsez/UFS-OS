@@ -14,7 +14,7 @@
  */
 
 typedef struct superBlock { // size = 16 bytes
-    int inodesSize; // the number of inodes he ufs have
+    int inodesSize; // the number of inodes the ufs have
     int blocksSize; // the number of blocks the ufs have
     int freeInodes; // the number of free inodes the ufs have
     int freeBlocks; // the number of free blocks the ufs have
@@ -40,11 +40,19 @@ typedef struct fileDescriptor {
 typedef struct mydirent{
     int          inode;       // Inode index in the inodes list
     char         d_name[MAX_NAME]; // Null-terminated filename
-}mydirent;
+} mydirent;
 
 typedef struct myDIR{
-    mydirent entry;
+    size_t size;
+    size_t index;
+    mydirent *entry;
 } myDIR;
+
+typedef struct myFILE { //
+    inode index;
+    size_t offset;
+    size_t size;
+} myFILE;
 
 void mymkfs(int size);
 
@@ -59,5 +67,11 @@ ssize_t myread(int myfd, void *buf, size_t count);
 ssize_t mywrite(int myfd, const void *buf, size_t count);
 
 off_t mylseek(int myfd, off_t offset, int whence);
+
+myDIR *myopendir(const char *name);
+
+mydirent *myreaddir(myDIR *dirp);
+
+int myclosedir(myDIR *dirp);
 
 #endif //UFS_OS_MYFS_H
