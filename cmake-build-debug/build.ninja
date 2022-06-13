@@ -61,6 +61,12 @@ build CMakeFiles/ufs_os.dir/main.c.o: C_COMPILER__ufs_os_Debug /home/elad/Deskto
   OBJECT_DIR = CMakeFiles/ufs_os.dir
   OBJECT_FILE_DIR = CMakeFiles/ufs_os.dir
 
+build CMakeFiles/ufs_os.dir/mystdio.c.o: C_COMPILER__ufs_os_Debug /home/elad/Desktop/ufs-os/mystdio.c || cmake_object_order_depends_target_ufs_os
+  DEP_FILE = CMakeFiles/ufs_os.dir/mystdio.c.o.d
+  FLAGS = -g
+  OBJECT_DIR = CMakeFiles/ufs_os.dir
+  OBJECT_FILE_DIR = CMakeFiles/ufs_os.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target ufs_os
@@ -69,7 +75,7 @@ build CMakeFiles/ufs_os.dir/main.c.o: C_COMPILER__ufs_os_Debug /home/elad/Deskto
 #############################################
 # Link the executable ufs_os
 
-build ufs_os: C_EXECUTABLE_LINKER__ufs_os_Debug CMakeFiles/ufs_os.dir/myfs.c.o CMakeFiles/ufs_os.dir/main.c.o
+build ufs_os: C_EXECUTABLE_LINKER__ufs_os_Debug CMakeFiles/ufs_os.dir/myfs.c.o CMakeFiles/ufs_os.dir/main.c.o CMakeFiles/ufs_os.dir/mystdio.c.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/ufs_os.dir
   POST_BUILD = :

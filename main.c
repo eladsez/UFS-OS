@@ -58,6 +58,7 @@ int main() {
 
         myDIR *dir = myopendir("/foldi");
         mydirent *dirent;
+        printf("\nThe files under foldi folder:\n");
         // should print all the files in the foldi folder
         while ((dirent = myreaddir(dir)) != NULL) {
             printf("%s\n", dirent->d_name);

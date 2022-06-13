@@ -49,10 +49,6 @@ typedef struct myDIR{
     mydirent *entry;
 } myDIR;
 
-typedef struct myFILE {
-    int fd;
-} myFILE;
-
 void mymkfs(int size);
 
 int mymount(const char *source, const char *target,const char *filesystemtype, unsigned long mountflags, const void *data);
