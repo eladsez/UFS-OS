@@ -10,7 +10,7 @@ libmyfs.so: myfs.c myfs.h
 	$(CC) $(FLAGS) --shared -fPIC myfs.c -o libmyfs.so
 
 libmylibc.so: mystdio.c mystdio.h
-	$(CC) $(FLAGS) -w --shared -fPIC mystdio.c -o libmylibc.so
+	$(CC) $(FLAGS) --shared -fPIC mystdio.c -o libmylibc.so
 
 main.o: myfs.h main.c
 	$(CC) $(FLAGS) -c main.c -o main.o

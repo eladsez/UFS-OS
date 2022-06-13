@@ -1,24 +1,26 @@
 #include <string.h>
 #include "myfs.h"
+#include "mystdio.h"
 #include <fcntl.h>
 
+#include <stdlib.h>
 
 int main() {
-    mymkfs(30 * 1024);
+    mymkfs(100 * 1024);
     mymount("UFS", "", "", 0, NULL);
     char buff[1024];
 
     {
         int fd;
-//        /// tests for the basic system calls operations: myopen, myclose, mywrite, myread, mylseek
+        /// tests for the basic system calls operations: myopen, myclose, mywrite, myread, mylseek
         memset(buff, 0, 1024);
-//        fd = myopen("/file1.txt", O_WRONLY | O_CREAT);
-//        mywrite(fd, "hello world", 11);
-//        myclose(fd);
-//        fd = myopen("/file1.txt", O_RDONLY);
-//        myread(fd, buff, 11);
-//        printf("%s\n\n", buff); // should print hello world
-//        myclose(fd);
+        fd = myopen("/file1.txt", O_WRONLY | O_CREAT);
+        mywrite(fd, "hello world", 11);
+        myclose(fd);
+        fd = myopen("/file1.txt", O_RDONLY);
+        myread(fd, buff, 11);
+        printf("%s\n\n", buff); // should print hello world
+        myclose(fd);
 
         fd = myopen("/file2.txt", O_RDWR | O_CREAT);
         mywrite(fd, "it's the first sentences!", 25);
@@ -64,5 +66,32 @@ int main() {
             printf("%s\n", dirent->d_name);
         }
         myclosedir(dir);
+    }
+    {
+        /// test 3
+        /// test open
+        myFILE *file = myfopen("text.txt","r+");
+
+        printf("file opened successfully\n");
+        /// test write
+        myfwrite("hell0",1,5,file);
+
+        printf("writen to file successfully\n");
+        /// test close
+        myfclose(file);
+        /// test read
+        file = myfopen("text.txt","r");
+        char* temp = (char*) malloc(5*sizeof (char));
+        size_t bytes_read = myfread(temp,1,5,file);
+        printf("%zu bytes read successfully:%s\n",bytes_read,temp);
+
+        printf("my fscanf\n");
+        char h,e,l1,l2;
+        int o;
+        printf("here i am\n");
+        myfscanf(file,"%c%c%c%c%d",&h,&e,&l1,&l2,&o);
+        printf("will u send me an angel");
+        printf("%c%c%c%c%d",h,e,l1,l2,o);
+
     }
 }

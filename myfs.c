@@ -166,7 +166,10 @@ int createNewFile(const char *name) {
  */
 int myopen(const char *pathname, int flags) {
     int inode = findInode(pathname);
-    if (inode == -1 && flags & O_CREAT) { // if the file doesn't exist and O_CREAT so create it
+
+    if (inode == -1 && flags & O_CREAT)
+    { // if the file doesn't exist and O_CREAT so create it
+
         inode = createNewFile(pathname);
     }
     if (inode == -1) { // if the file doesn't exist and no O_CREAT
