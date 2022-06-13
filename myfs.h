@@ -20,9 +20,10 @@ typedef struct superBlock { // size = 16 bytes
     int freeBlocks; // the number of free blocks the ufs have
 } superBlock;
 
-typedef struct inode { // size = 270 bytes
+typedef struct inode { // size = 260 bytes
     char name[MAX_NAME];
     int directedBlock; // index to the first block of the file (the blocks are in array)
+    int bytesSize; // the size of bytes the file is taken in the data of the blocks
 } inode;
 
 typedef struct block { // size = 517

@@ -60,6 +60,7 @@ void mymkfs(int size) {
     inodes = malloc(sizeof(inode) * superb.inodesSize);
     for (i = 0; i < superb.inodesSize; ++i) {
         inodes[i].directedBlock = -1;
+        inodes[i].bytesSize = 0;
     }
 
     blocks = malloc(sizeof(block) * superb.blocksSize);
@@ -175,10 +176,14 @@ int myopen(const char *pathname, int flags) {
     if (newfd == -1) { // if the fd list is full return -1
         return -1;
     }
-    fd[newfd].inode = inode;
-    fd[newfd].offset = 0;
-    fd[newfd].permissions = flags;
+    if ((flags & O_APPEND) == O_APPEND) {
+        fd[newfd].offset = inodes[inode].bytesSize;
+    } else {
+        fd[newfd].offset = 0;
+    }
 
+    fd[newfd].inode = inode;
+    fd[newfd].permissions = flags;
     return newfd;
 }
 
@@ -203,8 +208,8 @@ int myclose(int myfd) {
  */
 ssize_t myread(int myfd, void *buf, size_t count) {
     // if it doesn't have permission to read or the fd doesn't exist return error
-    if ((fd[myfd].permissions != O_RDONLY && fd[myfd].permissions != O_RDWR) ||
-        fd[myfd].inode == -1) {/// TODO: fix the permissions
+    if ((fd[myfd].permissions != (O_RDONLY | O_CREAT) && fd[myfd].permissions != (O_RDWR | O_CREAT) &&
+         fd[myfd].permissions != O_RDONLY && fd[myfd].permissions != O_RDWR) || fd[myfd].inode == -1) {
         return -1;
     }
     ssize_t dataSum = 0;
@@ -226,9 +231,10 @@ ssize_t myread(int myfd, void *buf, size_t count) {
         count -= BLOCK_SIZE;
     }
     if (block != -1) { // if the block not over it means the count < block size so read the rest
-        strncpy(buf, blocks[block].data, count);
+        strncpy(buf, (blocks[block].data + tempOffset), count);
         dataSum += (ssize_t) count;
     }
+    fd[myfd].offset += (int) dataSum;
     return dataSum;
 }
 
@@ -241,8 +247,9 @@ ssize_t myread(int myfd, void *buf, size_t count) {
  */
 ssize_t mywrite(int myfd, const void *buf, size_t count) {
     // if it doesn't have permission to write or the fd doesn't exist return error
-    if (((fd[myfd].permissions & O_WRONLY) != O_WRONLY && (fd[myfd].permissions & O_RDWR) != O_RDWR) ||
-        fd[myfd].inode == -1) {
+    if ((fd[myfd].permissions != (O_WRONLY | O_CREAT) && fd[myfd].permissions != (O_RDWR | O_CREAT) &&
+         fd[myfd].permissions != O_WRONLY && fd[myfd].permissions != O_RDWR &&
+         fd[myfd].permissions != (O_APPEND | O_CREAT) && fd->permissions != O_APPEND) || fd[myfd].inode == -1) {
         return -1;
     }
 
@@ -279,7 +286,7 @@ ssize_t mywrite(int myfd, const void *buf, size_t count) {
         block = blocks[block].next_block;
     }
 
-    // this loop is when we need to creat new blocks
+    // this loop is when we need to create new blocks
     while (blocks[block].next_block == -1 && count < BLOCK_SIZE && count > 0) {
         if (count + tempOffset < BLOCK_SIZE) {
             strncpy(blocks[block].data + tempOffset, buf, count);
@@ -299,7 +306,25 @@ ssize_t mywrite(int myfd, const void *buf, size_t count) {
             block = blocks[block].next_block;
         }
     }
+    fd[myfd].offset += (int)dataSum;
+    inodes[fd[myfd].inode].bytesSize += (int) dataSum;
     return dataSum;
+}
+
+off_t mylseek(int myfd, off_t offset, int whence) {
+    if ((fd[myfd].permissions & O_APPEND) == O_APPEND) { // can't seek if we are in append mode
+        return -1;
+    }
+    if (whence == SEEK_SET) {
+        fd[myfd].offset = (int) offset;
+    }
+    if (whence == SEEK_CUR) {
+        fd[myfd].offset += (int) offset;
+    }
+    if (whence == SEEK_END) {
+        fd[myfd].offset = inodes[fd[myfd].inode].bytesSize + (int) offset;
+    }
+    return fd[myfd].offset;
 }
 
 myDIR *myopendir(const char *name) {
@@ -348,30 +373,4 @@ int myclosedir(myDIR *dirp) {
     free(dirp);
     return 0;
 }
-
-//myFILE *myfopen(const char *restrict pathname, const char *restrict mode) {
-//
-//}
-//
-//
-//int myfclose(myFILE *stream) {
-//
-//}
-//
-//size_t myfwrite(const void *restrict ptr, size_t size, size_t nmemb, myFILE *restrict stream) {
-//
-//}
-//
-//int myfseek(myFILE *stream, long offset, int whence) {
-//
-//}
-//
-//int myfscanf(myFILE *restrict stream, const char *restrict format, ...) {
-//
-//}
-//
-//int myfprintf(myFILE *restrict stream, const char *restrict format, ...) {
-//
-//}
-
 
