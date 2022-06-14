@@ -158,6 +158,10 @@ int createNewFile(const char *name) {
     return inode;
 }
 
+size_t statSize(int myfd){
+    return inodes[fd[myfd].inode].bytesSize;
+}
+
 /**
  * My implementation for the open syscall
  * @param pathname - the path of the file we desire to open
@@ -228,7 +232,7 @@ ssize_t myread(int myfd, void *buf, size_t count) {
 
         fd[myfd].offset += BLOCK_SIZE - tempOffset; // increase the actual offset
         dataSum += BLOCK_SIZE - tempOffset;
-        strncpy(buf, blocks[block].data + tempOffset, BLOCK_SIZE - tempOffset);
+        strncpy((char *)buf, blocks[block].data + tempOffset, BLOCK_SIZE - tempOffset);
         tempOffset = 0;
         block = blocks[block].next_block;
         count -= BLOCK_SIZE;

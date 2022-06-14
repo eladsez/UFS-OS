@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 
 
 float mypow (float x, int y)
@@ -79,15 +80,14 @@ int myfseek(myFILE *stream, long offset, int whence) {
 }
 
 
-int myfscanf(myFILE *stream, const char *format, ...){
-    char* buf= malloc(sizeof(format));
-    memset(buf, 0, sizeof(format));
+int myfscanf(myFILE *stream, const char *format, ...)
+{
+    /// read file to buffer
+    int file_size = statSize(stream->fd);
+    char* buf = (char*) malloc(file_size);
+    myread(stream->fd, buf, file_size);
 
-    myfread(buf, 1, sizeof(format), stream);
-    int i=0;
-    int count = 0;
-    float temp = 0;
-    char* itr = format;
+    const char* itr = format;
     va_list arg;
     va_start(arg, format);
     while(*itr != '\0')
@@ -97,36 +97,62 @@ int myfscanf(myFILE *stream, const char *format, ...){
             char temp0 = *(++itr);
             if(temp0 == 'd')
             {
-                temp0 =0;
-                while(buf[i]!= ' '){
-                    temp0 *=10;
-                    temp0 += (float)(buf[i]-'0');
-                    i++;
+                int num = 0;
+                while(*buf != ' '&& *buf != EOF &&*buf != '\n'&&*buf != '\0')
+                {
+                    num *=10;
+                    num += (int)(*buf-'0');
+                    ++buf;
                 }
-                *(int*)arg = (int)temp;
-                i++;
+
+                int* ans;
+                ans = va_arg(arg,int*);
+                *ans = num;
+                ++buf;
             }
             if(temp0 == 'c')
             {
-                *(char*)arg = buf[i];
-                i++;
+                char* ans = va_arg(arg,char*);
+                *ans = *buf;
+                ++buf;
             }
             if(temp0 == 'f')
             {
-                temp = 0;
-                while(buf[i]!= ' ' && buf[i] != '.'){
-                    temp *=10;
-                    temp += buf[i]-'0';
-                    i++;
+                float val = 0;
+                int afterdot=0;
+                float scale=1;
+                int neg = 0;
+
+                if (*buf == '-') {
+                    ++buf;
+                    neg = -1;
                 }
-                while(buf[i]!= ' ')
+                float add = 0;
+                while(*buf!= ' ' && *buf != EOF &&*buf != '\n'&&*buf != '\0')
                 {
-                    float pow = mypow(10, count);
-                    temp+=(float) ((buf[i]-'0')/pow);
-                    count++;
-                    i++;
+                    add = (*buf-'0');
+                    if (afterdot)
+                    {
+                        scale = scale/10;
+                        val = val + add*scale;
+                    }
+                    else
+                    {
+                        if (*buf == '.')
+                        {
+                            afterdot++;
+                            ++buf;
+                            continue;
+                        }
+                        val = val * 10.0 + add;
+                    }
+                    ++buf;
                 }
-                *(float*)arg = temp;
+                float* ans = va_arg(arg,float*);
+                if(neg)
+                    *ans = -val;
+                else
+                    *ans = val;
             }
         }
         ++itr;
@@ -136,10 +162,8 @@ int myfscanf(myFILE *stream, const char *format, ...){
 
 
 int myfprintf(myFILE *stream, const char *format, ...){
-    char* buf =  malloc(2*sizeof(format));;
-    char* curr = malloc(2*sizeof (format));
-    memset(buf, 0, sizeof(format));
-    char* itr = format;
+    char* buff;
+    const char* itr = format;
     va_list arg;
     va_start(arg, format);
     while(*itr != '\0')
@@ -147,29 +171,60 @@ int myfprintf(myFILE *stream, const char *format, ...){
         if(*itr == '%')
         {
             char temp = *(++itr);
-            if (temp=='d')
+
+            if (temp == 'd')
             {
-                memset(curr, 0, sizeof(format));
-                sprintf(curr, "%d", va_arg(arg,int));
-                strcat(buf, curr);
-                strcat(buf, " ");
+                int temp0 = va_arg(arg,int);
+                printf("lucky int :%d\n",temp0);
+                int size = (int)((floor(log10(temp0))+1)*sizeof(char));
+                buff = (char*)malloc(size);
+                sprintf(buff, "%d", temp0);
+                printf("int as string :%s\n",buff);
+                for (int i = 0; i<size ;++i)
+                {
+                    myfwrite(&buff[i],1,1,stream);
+                }
+                free(buff);
             }
             if(temp == 'c')
             {
-                char readed = (char)va_arg(arg, int);
-                strncat(buf, &readed, 1);
-                strcat(buf, " ");
+                char temp0 = (char )va_arg(arg,int);
+                printf("char : %c\n",temp0);
+                myfwrite(&temp0,sizeof (char ),1,stream);
             }
             if(temp == 'f')
             {
-                memset(curr, 0, sizeof(format));
-                sprintf(curr, "%f", va_arg(arg,double));
-                strcat(buf, curr);
-                strcat(buf, " ");
+                double temp0 = va_arg(arg,double);
+                float copy = temp0;
+                printf("float : %f\n",temp0);
+
+                int size = 0;
+                int test = (int)copy;
+                while(copy != (float)test)
+                {
+                    copy *= 10;
+                    test = (int)copy;
+                }
+                while(copy>0)
+                {
+                    ++size;
+                    copy/=10;
+                }
+                size++;
+
+                buff = (char*)malloc(size);
+                sprintf(buff, "%f", temp0);
+                printf("flout as string: %s\n",buff);
+                buff[size] = ' ';
+                for (int i = 0; buff[i] !=' ' ;++i)
+                {
+                    myfwrite(&buff[i],sizeof (char),1,stream);
+                }
+                //myfwrite(buff,size,1,stream);
+                free(buff);
             }
         }
         ++itr;
     }
-    myfwrite(buf, 1, sizeof(buf), stream);
     return 0;
 }

@@ -4,7 +4,7 @@ FLAGS = -Wall -g
 all: main
 
 main: libmyfs.so main.o libmylibc.so
-	$(CC) $(FLAGS) main.o ./libmyfs.so ./libmylibc.so -o main
+	$(CC) $(FLAGS) main.o ./libmyfs.so ./libmylibc.so -lm -o main
 
 libmyfs.so: myfs.c myfs.h
 	$(CC) $(FLAGS) --shared -fPIC myfs.c -o libmyfs.so

@@ -63,6 +63,8 @@ ssize_t mywrite(int myfd, const void *buf, size_t count);
 
 off_t mylseek(int myfd, off_t offset, int whence);
 
+size_t statSize(int myfd);
+
 myDIR *myopendir(const char *name);
 
 mydirent *myreaddir(myDIR *dirp);
