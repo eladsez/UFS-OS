@@ -175,11 +175,10 @@ int myfprintf(myFILE *stream, const char *format, ...){
             if (temp == 'd')
             {
                 int temp0 = va_arg(arg,int);
-                printf("lucky int :%d\n",temp0);
+
                 int size = (int)((floor(log10(temp0))+1)*sizeof(char));
                 buff = (char*)malloc(size);
                 sprintf(buff, "%d", temp0);
-                printf("int as string :%s\n",buff);
                 for (int i = 0; i<size ;++i)
                 {
                     myfwrite(&buff[i],1,1,stream);
@@ -189,14 +188,12 @@ int myfprintf(myFILE *stream, const char *format, ...){
             if(temp == 'c')
             {
                 char temp0 = (char )va_arg(arg,int);
-                printf("char : %c\n",temp0);
                 myfwrite(&temp0,sizeof (char ),1,stream);
             }
             if(temp == 'f')
             {
                 double temp0 = va_arg(arg,double);
                 float copy = temp0;
-                printf("float : %f\n",temp0);
 
                 int size = 0;
                 int test = (int)copy;
@@ -214,13 +211,11 @@ int myfprintf(myFILE *stream, const char *format, ...){
 
                 buff = (char*)malloc(size);
                 sprintf(buff, "%f", temp0);
-                printf("flout as string: %s\n",buff);
                 buff[size] = ' ';
                 for (int i = 0; buff[i] !=' ' ;++i)
                 {
                     myfwrite(&buff[i],sizeof (char),1,stream);
                 }
-                //myfwrite(buff,size,1,stream);
                 free(buff);
             }
         }
