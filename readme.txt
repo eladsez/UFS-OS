@@ -27,7 +27,7 @@ We tested all of the above functions in main.c file, main file is well documente
                           *-HOW TO RUN-*
 First open a terminal in the UFS-OS-main directory and type <make all>.
 Now after everything compiled you can run the following targets:
-a) To run the tests for the assigment type <./main>
+To run our self-made tests for the assigment type <./main>
 
                               *-EXTRA-*
 All our source code are compiled to a shared library and our tests use this shared library you can see it in the makefile.
