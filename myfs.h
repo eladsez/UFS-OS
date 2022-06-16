@@ -7,6 +7,8 @@
 #define MAX_NAME 256
 
 /**
+ * @brief This file represent the header of our implementation for write, read, open, close, syscalls and dirent.h
+ *
  * Here is the structure of one UFS.
  * The super block, inodes and block will first initial in every running of the program.
  * Also they will dynamically allocated in a static manner just because the assigment instructions.

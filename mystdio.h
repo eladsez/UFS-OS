@@ -2,8 +2,6 @@
 #define UFS_OS_MYSTDIO_H
 #include <stdio.h>
 
-
-
 typedef struct myFILE {
     int fd;
 } myFILE;

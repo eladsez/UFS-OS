@@ -49,7 +49,7 @@ int main() {
 
 
         {
-        /// test 2
+        /// testing for the function of the directories:
         myclose(myopen("/foldi/file0.txt", O_CREAT));
         myclose(myopen("/foldi/file1.txt", O_CREAT));
         myclose(myopen("/foldi/file2.txt", O_CREAT));
@@ -69,7 +69,9 @@ int main() {
         myclosedir(dir);
     }
     {
-        /// test 3
+        /**
+         * tests for the functions handling files in the mystdio library we created:
+         */
         /// test open
         myFILE *file = myfopen("text.txt","r+");
 

@@ -318,6 +318,13 @@ ssize_t mywrite(int myfd, const void *buf, size_t count) {
     return dataSum;
 }
 
+/**
+ *  My implementation for the lseek syscall
+ * @param myfd - the file descriptor we wish to seek on
+ * @param offset - the offset we wish to seek to
+ * @param whence - the way we wish to seek
+ * @return
+ */
 off_t mylseek(int myfd, off_t offset, int whence) {
     if ((fd[myfd].permissions & O_APPEND) == O_APPEND) { // can't seek if we are in append mode
         return -1;
@@ -334,6 +341,11 @@ off_t mylseek(int myfd, off_t offset, int whence) {
     return fd[myfd].offset;
 }
 
+/**
+ * open directory function
+ * @param name - the name of the directory we wish to open
+ * @return - the Dir struct of the directory
+ */
 myDIR *myopendir(const char *name) {
     int childs[superb.inodesSize];
     size_t entries = 0;
@@ -365,7 +377,11 @@ myDIR *myopendir(const char *name) {
     ans->index = 0;
     return ans;
 }
-
+/**
+ * read directory function
+ * @param dirp - the directory we wish to read from
+ * @return the entry of the current directory
+ */
 mydirent *myreaddir(myDIR *dirp) {
     if (dirp->size == dirp->index) {
         return NULL;
@@ -375,6 +391,11 @@ mydirent *myreaddir(myDIR *dirp) {
     return ans;
 }
 
+/**
+ * close directory function
+ * @param dirp - the directory we wish to close
+ * @return 0 on success
+ */
 int myclosedir(myDIR *dirp) {
     free(dirp->entry);
     free(dirp);

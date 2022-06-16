@@ -1,4 +1,4 @@
-*-FILES INFORMATION-*
+                                        *-FILES INFORMATION-*
 the first section of the assigment was implemention of simple ufs which we implemented in myfs.c
 we implemented the ufs by implementing the the following functions:
 mymount
