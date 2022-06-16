@@ -48,7 +48,7 @@ int main() {
 
 
 
-        {
+      {
         /// testing for the function of the directories:
         myclose(myopen("/foldi/file0.txt", O_CREAT));
         myclose(myopen("/foldi/file1.txt", O_CREAT));
@@ -88,14 +88,6 @@ int main() {
         size_t bytes_read = myfread(temp,1,14,file);
         printf("%zu bytes read successfully:%s\n",bytes_read,temp);
         myfseek(file,0,SEEK_SET);
-
-        char hell[4];
-        int o;
-        float pi;
-
-        myfscanf(file,"%c%c%c%c%d%f",&hell[0],&hell[1],&hell[2],&hell[3],&o,&pi);
-        printf("supposed to print hell0 when the last char is integer \nalso print the value of pi:\n%c%c%c%c%d\n",hell[0],hell[1],hell[2],hell[3],o);
-        printf("pi value = %f\n",pi);
 
         myfclose(file);
 
